@@ -20,9 +20,19 @@ echo "Downloading Tipi-Tricks..."
 cd $INSTALL_DIR
 git clone https://github.com/austinsr1/Tipi-Tricks.git
 
+# Move bin/, etc/, and tipi-tricks to the runtipi directory
+echo "Moving files..."
+mv Tipi-Tricks/bin $INSTALL_DIR/
+mv Tipi-Tricks/etc $INSTALL_DIR/
+mv Tipi-Tricks/tipi-tricks $INSTALL_DIR/
+
 # Set permissions for tipi-tricks and bin directory
 echo "Setting permissions..."
-chmod 755 $INSTALL_DIR/Tipi-Tricks/tipi-tricks
-chmod -R 755 $INSTALL_DIR/Tipi-Tricks/bin
+chmod 755 $INSTALL_DIR/tipi-tricks
+chmod -R 755 $INSTALL_DIR/bin
+
+# Remove the git download directory
+echo "Cleaning up..."
+rm -rf Tipi-Tricks
 
 echo "Tipi-Tricks has been successfully installed in $INSTALL_DIR."
