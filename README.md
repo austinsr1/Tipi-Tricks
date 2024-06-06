@@ -31,7 +31,7 @@ Stay informed about your system’s storage status. Tipi Tricks monitors disk sp
 Reclaim valuable disk space by clearing the Docker cache.
 
 ### 8. Optional Notifications
-Receive timely notifications about system events and statuses if the gotify-cli is installed and configured. Tipi Tricks uses Gotify to keep you informed about important events and actions.
+Receive timely notifications about system events and statuses if the gotify-cli is installed and configured. 
 
 ## Installation
 To install Tipi Tricks:
