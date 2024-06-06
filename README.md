@@ -44,16 +44,3 @@ curl -L https://raw.githubusercontent.com/austinsr1/Tipi-Tricks/main/install.sh 
 ./tipi-tricks
 Usage: tipi-tricks [OPTIONS] COMMAND [ARGS]...
 
-  Tipi tricks command group.
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  backup       Backup submenu.
-  
-  clear-cache  Clear Docker cache.
-  
-  monitors     Monitors submenu.
-  
-  updates      Updates submenu.
