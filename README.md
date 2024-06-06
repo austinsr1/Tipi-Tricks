@@ -51,6 +51,9 @@ Options:
 
 Commands:
   backup       Backup submenu.
+  
   clear-cache  Clear Docker cache.
+  
   monitors     Monitors submenu.
+  
   updates      Updates submenu.
