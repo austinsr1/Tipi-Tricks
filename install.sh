@@ -1,18 +1,30 @@
 #!/bin/bash
 
-# Define the installation directory
-INSTALL_DIR="$HOME/runtipi"
-
-# Check if runtipi-cli exists in the installation directory
-if [ ! -f "$INSTALL_DIR/runtipi-cli" ]; then
-  echo "Tipi Tricks must be installed in the runtipi directory."
-  exit 1
+# Find the correct pip command
+if command -v pip &> /dev/null; then
+    PIP_CMD=pip
+elif command -v pip3 &> /dev/null; then
+    PIP_CMD=pip3
+else
+    echo "pip or pip3 not found. Please install pip to continue."
+    exit 1
 fi
 
+# Define the installation directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if runtipi-cli exists in the current directory
+if [ ! -f "$SCRIPT_DIR/runtipi-cli" ]; then
+    echo "Tipi Tricks must be installed in a directory containing runtipi-cli."
+    exit 1
+fi
+
+INSTALL_DIR="$SCRIPT_DIR"
+
 # Check if click is installed, if not install it
-if ! pip show click &> /dev/null; then
-  echo "Installing 'click'..."
-  pip install click
+if ! $PIP_CMD show click &> /dev/null; then
+    echo "Installing 'click'..."
+    $PIP_CMD install click
 fi
 
 # Download the Tipi-Tricks repository
