@@ -41,6 +41,8 @@ To install Tipi Tricks:
 ```sh
 curl -L https://raw.githubusercontent.com/austinsr1/Tipi-Tricks/main/install.sh | bash
 ```
+3. Run ./tipi-tricks as root or with sudo.
+    
 ## Usage
 ```sh
 ./tipi-tricks
