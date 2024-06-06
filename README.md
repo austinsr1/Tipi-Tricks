@@ -28,7 +28,7 @@ Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with 
 Stay informed about your system’s storage status. Tipi Tricks monitors disk space usage and alerts you when space is running low, helping you avoid potential system slowdowns or crashes. The notification threshold can be configured in `runtipi/etc/monitor_space.conf`. Tipi is set to stop if the install drive reaches 99% capacity and will resume once space is below 99%.
 
 ### 7. Clearing Docker Cache
-Reclaim valuable disk space by clearing the Docker cache. Tipi Tricks automatically manages and purges unnecessary Docker images and containers to free up space on your system.
+Reclaim valuable disk space by clearing the Docker cache.
 
 ### 8. Optional Notifications
 Receive timely notifications about system events and statuses if the gotify-cli is installed and configured. Tipi Tricks uses Gotify to keep you informed about important events and actions.
