@@ -1,6 +1,6 @@
 # Tipi-Tricks
 Command line utility to enhance functionality for your Tipi Homeserver.
-Requirements: Python 3.10, Click, and Tipi from [Tipi](https://runtipi.io/)
+Requirements: Python 3.10, Click, and [Tipi](https://runtipi.io/)
 
 # Tipi Tricks Documentation
 
