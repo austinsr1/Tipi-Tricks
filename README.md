@@ -5,7 +5,7 @@ Requirements: Python 3.10, Click, and Tipi from [Tipi](https://runtipi.io/)
 # Tipi Tricks Documentation
 
 ## Introduction
-Tipi Tricks is a powerful utility designed to streamline the management and maintenance of your Tipi environment. Developed in Python, with Click as the sole dependency, Tipi Tricks automates various tasks to ensure your system remains up-to-date, secure, and efficient.
+Tipi Tricks is a utility designed to streamline the management and maintenance of your Tipi environment. Developed in Python, with Click as the sole dependency, Tipi Tricks automates various tasks to ensure your system remains up-to-date, secure, and efficient.
 
 ## Features
 
