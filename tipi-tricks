@@ -6,7 +6,7 @@ import subprocess
 import json
 
 CONFIG_FILE = 'etc/runtipi_config.json'
-CONFIG_DIR = '/root/runtipi/'
+CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
 SERVICE_FILE = '/etc/systemd/system/monitor_shares.service'
 DRIVE_SPACE_SERVICE_FILE = '/etc/systemd/system/monitor_drive_space.service'
@@ -15,7 +15,7 @@ CRONTAB_FILE = '/etc/crontab'
 SYSTEM_CRON_ENTRY = f"30 0 * * * root apt update;apt upgrade -y;apt autoremove; apt clean; needrestart -r a \n"
 APP_CRON_ENTRY = f"15 0 * * * root cd {CONFIG_DIR} && ./{SCRIPT_NAME} --update-apps\n"
 TIPI_CRON_ENTRY = f"0 0 * * * root cd {CONFIG_DIR} && ./runtipi-cli update latest\n"
-BACKUP_CRON_ENTRY = f"30 3 * * * root cd {CONFIG_DIR} && ./runtipi-cli stop && {CONFIG_DIR}bin/scheduled_tipi_backup.py && ./runtipi-cli start\n"
+BACKUP_CRON_ENTRY = f"30 3 * * * root cd {CONFIG_DIR} && ./runtipi-cli stop && {CONFIG_DIR}/bin/scheduled_tipi_backup.py && ./runtipi-cli start\n"
 
 def find_runtipi_cli():
     """Find the runtipi-cli binary and log its path to the configuration file."""
@@ -53,8 +53,8 @@ def find_runtipi_cli():
 
 def log_runtipi_cli_path(path):
     """Log the runtipi-cli path to the configuration file."""
-    if not os.path.exists(CONFIG_DIR):
-        os.makedirs(CONFIG_DIR)
+    if not os.path.exists(os.path.join(CONFIG_DIR, 'etc')):
+        os.makedirs(os.path.join(CONFIG_DIR, 'etc'))
     with open(CONFIG_PATH, 'w') as config_file:
         json.dump({'runtipi_cli_path': path}, config_file)
 
@@ -232,7 +232,6 @@ def update_apps():
                 click.echo(f"Updated {app_name} successfully.")
     else:
         click.echo("No ./apps directory found.")
-
 
 try:
     runtipi_cli_path = find_runtipi_cli()
