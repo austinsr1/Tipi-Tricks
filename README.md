@@ -22,7 +22,7 @@ Maintain system security and performance with automatic system updates. Tipi Tri
 Protect your data with regular, automated backups. Tipi Tricks schedules and performs backups, allowing you to restore your system to a previous state in case of any issues.
 
 ### 5. Mountpoint Monitoring
-Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with gotify-cli) if any mountpoints become unavailable, ensuring data integrity and accessibility. It can stop Tipi containers that require data from the missing mountpoints and automatically restart them when the mountpoints become available again. Apps that will be stopped can be configured in `runtipi/etc/monitor_shares.conf`.
+Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with gotify-cli) if any mountpoints become unavailable. It can stop Tipi containers that require data from the missing mountpoints and automatically restart them when the mountpoints become available again. Apps that will be stopped can be configured in `runtipi/etc/monitor_shares.conf`.
 
 ### 6. Space Monitoring
 Stay informed about your system’s storage status. Tipi Tricks monitors disk space usage and alerts you when space is running low, helping you avoid potential system slowdowns or crashes. The notification threshold can be configured in `runtipi/etc/monitor_space.conf`. Tipi is set to stop if the install drive reaches 99% capacity and will resume once space is below 99%.
