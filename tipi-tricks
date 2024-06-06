@@ -233,7 +233,7 @@ def update_apps():
     else:
         click.echo("No ./apps directory found.")
 
-# Find runtipi-cli at the start and store its path
+
 try:
     runtipi_cli_path = find_runtipi_cli()
 except FileNotFoundError as e:
