@@ -1,7 +1,7 @@
 # Tipi-Tricks
 Command line utility to enhance functionality for your Tipi Homeserver.
 Requirements: Python 3.10, Click, and [Tipi](https://runtipi.io/)
-CURRENTLY, REQUIRES RUNTIP TO BE INSTALLED IN /root/runtipi/
+
 
 # Tipi Tricks Documentation
 
