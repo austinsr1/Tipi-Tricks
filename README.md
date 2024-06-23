@@ -12,6 +12,7 @@ Command line utility to enhance functionality for your Tipi Homeserver.
 
 **Tipi Tricks** is a utility designed to streamline the management and maintenance of your Tipi environment. Developed in Python, with Click as the sole dependency, Tipi Tricks automates various tasks to ensure your system remains up-to-date, secure, and efficient. Additional optional monitors may require extra packages to function properly.
 
+Guides will be available in the wiki: https://github.com/austinsr1/Tipi-Tricks/wiki
 ---
 
 ## Features
