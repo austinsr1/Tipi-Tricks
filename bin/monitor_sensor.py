@@ -180,12 +180,20 @@ if __name__ == "__main__":
     parser.add_argument('--debug', action='store_true', help='Enable debug output')
     parser.add_argument('--install', action='store_true', help='Install as a system service')
     parser.add_argument('--uninstall', action='store_true', help='Uninstall the system service')
+    parser.add_argument('--config', action='store_true', help='Run configuration and exit')
     args = parser.parse_args()
 
     if args.install:
         install_service(args.debug)
     elif args.uninstall:
         uninstall_service(args.debug)
+    elif args.config:
+        check_and_install_lm_sensors(args.debug)
+        sensor_data = get_sensor_data(args.debug)
+        sensors = parse_sensor_data(sensor_data, args.debug)
+        sensor, threshold_temp, optional_command = display_and_choose_sensors(sensors, args.debug)
+        save_config(sensor, threshold_temp, optional_command)
+        print("Configuration saved. Exiting.")
     else:
         check_and_install_lm_sensors(args.debug)
 
