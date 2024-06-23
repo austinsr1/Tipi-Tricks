@@ -1,7 +1,8 @@
+Here is the updated document with the new section added as #7 and the rest renumbered accordingly:
+
 # Tipi-Tricks
 Command line utility to enhance functionality for your Tipi Homeserver.
 Requirements: Python 3.10, Click, and [Tipi](https://runtipi.io/)
-
 
 # Tipi Tricks Documentation
 
@@ -28,10 +29,13 @@ Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with 
 ### 6. Space Monitoring
 Stay informed about your system’s storage status. Tipi Tricks monitors disk space usage and alerts you when space is running low, helping you avoid potential system slowdowns or crashes. The notification threshold can be configured in `runtipi/etc/monitor_space.conf`. Tipi is set to stop if the install drive reaches 99% capacity and will resume once space is below 99%.
 
-### 7. Clearing Docker Cache
+### 7. Temperature Monitoring
+Dynamically scan for temperature sensors and allow the user to choose the sensor to monitor. Tipi Tricks can trigger user-defined actions if the sensor's temperature exceeds the user-defined threshold.
+
+### 8. Clearing Docker Cache
 Reclaim valuable disk space by clearing the Docker cache.
 
-### 8. Optional Notifications
+### 9. Optional Notifications
 Receive timely notifications about system events and statuses if the gotify-cli is installed and configured. 
 
 ## Installation
@@ -42,7 +46,7 @@ To install Tipi Tricks:
 curl -L https://raw.githubusercontent.com/austinsr1/Tipi-Tricks/main/install.sh | bash
 ```
 3. Run ./tipi-tricks as root or with sudo.
-    
+
 ## Usage
 ```sh
 ./tipi-tricks
