@@ -1,5 +1,3 @@
-Here is the updated document with the new section added as #7 and the rest renumbered accordingly:
-
 # Tipi-Tricks
 Command line utility to enhance functionality for your Tipi Homeserver.
 Requirements: Python 3.10, Click, and [Tipi](https://runtipi.io/)
