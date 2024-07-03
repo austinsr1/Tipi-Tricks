@@ -68,4 +68,5 @@ def manage_backups():
         print(f"Removed old backup: {oldest_backup}")
 
 if __name__ == "__main__":
+    manage_backups()
     create_backup()
