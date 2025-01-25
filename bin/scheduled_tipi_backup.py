@@ -29,8 +29,12 @@ ITEMS_TO_BACKUP = [
 
 def create_backup():
     # Ensure backup directory exists
-    if not os.path.exists(BACKUP_DIR):
-        os.makedirs(BACKUP_DIR)
+    try:
+        if not os.path.exists(BACKUP_DIR):
+            os.makedirs(BACKUP_DIR)
+    except OSError as e:
+        print(f"Error creating backup directory {BACKUP_DIR}: {e}")
+        return
 
     # Get the current time for the backup filename
     current_time = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -64,8 +68,11 @@ def manage_backups():
     # Remove old backups if necessary
     while len(backup_files) > max_backups:
         oldest_backup = backup_files.pop(0)
-        os.remove(os.path.join(BACKUP_DIR, oldest_backup))
-        print(f"Removed old backup: {oldest_backup}")
+        try:
+            os.remove(os.path.join(BACKUP_DIR, oldest_backup))
+            print(f"Removed old backup: {oldest_backup}")
+        except OSError as e:
+            print(f"Error removing old backup {oldest_backup}: {e}")
 
 if __name__ == "__main__":
     manage_backups()
