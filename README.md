@@ -36,7 +36,7 @@ Protect your data with regular, automated backups. Tipi Tricks schedules and per
 
 ### 5. Mountpoint Monitoring
 
-Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with gotify-cli) if any mountpoints become unavailable. It can stop Tipi containers that require data from the missing mountpoints and automatically restart them when the mountpoints become available again. Apps that will be stopped can be configured in `runtipi/etc/monitor_shares.conf`.
+Tipi Tricks monitors your mountpoints from `/etc/fstab`, providing alerts (with gotify-cli) if any mountpoints become unavailable. It can stop Tipi containers that require data from the missing mountpoints and automatically restart them when the mountpoints become available again. Tipi Tricks will try to remount those shares periodically. Apps that will be stopped can be configured in `runtipi/etc/monitor_shares.conf`.
 
 ### 6. Space Monitoring
 
