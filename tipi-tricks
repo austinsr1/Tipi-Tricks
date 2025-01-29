@@ -10,9 +10,10 @@ CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(CONFIG_DIR, CONFIG_FILE)
 SERVICE_FILE = '/etc/systemd/system/monitor_shares.service'
 DRIVE_SPACE_SERVICE_FILE = '/etc/systemd/system/monitor_drive_space.service'
+TEMP_SENSOR_SERVICE_FILE = '/etc/systemd/system/monitor_temp_sensor.service'
 SCRIPT_NAME = os.path.basename(__file__)
 CRONTAB_FILE = '/etc/crontab'
-SYSTEM_CRON_ENTRY = f"30 0 * * * root apt update;apt upgrade -y;apt autoremove; apt clean; needrestart -r a \n"
+SYSTEM_CRON_ENTRY = f"30 0 * * * root apt update -y && apt upgrade -y && apt autoremove -y && apt clean -y && [ -f /var/run/reboot-required ] && reboot \n"
 APP_CRON_ENTRY = f"15 0 * * * root cd {CONFIG_DIR} && ./{SCRIPT_NAME} --update-apps\n"
 TIPI_CRON_ENTRY = f"0 0 * * * root cd {CONFIG_DIR} && ./runtipi-cli update latest\n"
 BACKUP_CRON_ENTRY = f"30 3 * * * root cd {CONFIG_DIR} && ./runtipi-cli stop && {CONFIG_DIR}/bin/scheduled_tipi_backup.py && ./runtipi-cli start\n"
@@ -233,6 +234,19 @@ def update_apps():
     else:
         click.echo("No ./apps directory found.")
 
+def install_temp_sensor():
+    """Install temp-sensor monitoring."""
+    click.echo("Installing temp-sensor monitoring...")
+    subprocess.run([os.path.join(CONFIG_DIR, 'bin/monitor_sensor.py'), '--install'], check=True)
+    subprocess.run([os.path.join(CONFIG_DIR, 'bin/monitor_sensor.py'), '--config'], check=True)
+    click.echo("Temp-sensor monitoring installed and started successfully.")
+
+def uninstall_temp_sensor():
+    """Uninstall temp-sensor monitoring."""
+    click.echo("Uninstalling temp-sensor monitoring...")
+    subprocess.run([os.path.join(CONFIG_DIR, 'bin/monitor_sensor.py'), '--uninstall'], check=True)
+    click.echo("Temp-sensor monitoring uninstalled successfully.")
+
 try:
     runtipi_cli_path = find_runtipi_cli()
 except FileNotFoundError as e:
@@ -365,6 +379,26 @@ def disable():
     click.echo("Disabling drive space monitoring...")
     disable_service("monitor_drive_space.service")
     remove_service_file(DRIVE_SPACE_SERVICE_FILE)
+
+@monitors.group()
+def temp_sensor():
+    """Temp sensor monitor:
+    This will monitor the temperature sensors and trigger notifications or actions
+    if the temperature goes above a specified threshold. Threshold can be configured in runtipi/etc/monitor_sensor.conf. 
+    """
+    pass
+
+@temp_sensor.command()
+def install():
+    """Install temp sensor monitoring."""
+    click.echo("Installing temp sensor monitoring...")
+    install_temp_sensor()
+
+@temp_sensor.command()
+def uninstall():
+    """Uninstall temp sensor monitoring."""
+    click.echo("Uninstalling temp sensor monitoring...")
+    uninstall_temp_sensor()
 
 @tipi_tricks.group()
 def backup():
