@@ -13,15 +13,31 @@ DRIVE_SPACE_SERVICE_FILE = '/etc/systemd/system/monitor_drive_space.service'
 TEMP_SENSOR_SERVICE_FILE = '/etc/systemd/system/monitor_temp_sensor.service'
 SCRIPT_NAME = os.path.basename(__file__)
 CRONTAB_FILE = '/etc/crontab'
-SYSTEM_CRON_ENTRY = f"30 0 * * * root apt update -y && apt upgrade -y && apt autoremove -y && apt clean -y && [ -f /var/run/reboot-required ] && reboot \n"
-APP_CRON_ENTRY = f"15 0 * * * root cd {CONFIG_DIR} && ./{SCRIPT_NAME} --update-apps\n"
-TIPI_CRON_ENTRY = f"0 0 * * * root cd {CONFIG_DIR} && ./runtipi-cli update latest\n"
-BACKUP_CRON_ENTRY = f"30 3 * * * root cd {CONFIG_DIR} && ./runtipi-cli stop && {CONFIG_DIR}/bin/scheduled_tipi_backup.py && ./runtipi-cli start\n"
+
+SYSTEM_CRON_ENTRY = (
+    "30 0 * * * root apt update -y && apt upgrade -y && "
+    "apt autoremove -y && apt clean -y && "
+    "[ -f /var/run/reboot-required ] && reboot \n"
+)
+
+APP_CRON_ENTRY = (
+    f"15 0 * * * root cd {CONFIG_DIR} && ./{SCRIPT_NAME} --update-apps\n"
+)
+
+TIPI_CRON_ENTRY = (
+    f"0 0 * * * root cd {CONFIG_DIR} && ./runtipi-cli update latest\n"
+)
+
+BACKUP_CRON_ENTRY = (
+    f"30 3 * * * root cd {CONFIG_DIR} && ./runtipi-cli stop && "
+    f"{CONFIG_DIR}/bin/scheduled_tipi_backup.py && ./runtipi-cli start\n"
+)
+
 
 def find_runtipi_cli():
     """Find the runtipi-cli binary and log its path to the configuration file."""
     binary_name = 'runtipi-cli'
-    
+
     # Check if config file exists and read the path from it
     if os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, 'r') as config_file:
@@ -36,13 +52,13 @@ def find_runtipi_cli():
         if os.path.exists(full_path) and os.access(full_path, os.X_OK):
             log_runtipi_cli_path(full_path)
             return full_path
-    
+
     # Check default installation directory
     default_path = os.path.join(CONFIG_DIR, binary_name)
     if os.path.exists(default_path) and os.access(default_path, os.X_OK):
         log_runtipi_cli_path(default_path)
         return default_path
-    
+
     # Prompt user for installation directory
     install_dir = click.prompt('runtipi-cli not found. Please enter the Tipi install directory', type=str)
     full_path = os.path.join(install_dir, binary_name)
@@ -52,175 +68,132 @@ def find_runtipi_cli():
     else:
         raise FileNotFoundError('runtipi-cli not found in the provided directory.')
 
+
 def log_runtipi_cli_path(path):
     """Log the runtipi-cli path to the configuration file."""
-    if not os.path.exists(os.path.join(CONFIG_DIR, 'etc')):
-        os.makedirs(os.path.join(CONFIG_DIR, 'etc'))
+    etc_dir = os.path.join(CONFIG_DIR, 'etc')
+    if not os.path.exists(etc_dir):
+        os.makedirs(etc_dir)
+
     with open(CONFIG_PATH, 'w') as config_file:
         json.dump({'runtipi_cli_path': path}, config_file)
 
-def add_tipi_update_cronjob():
-    """Add a cron job to run Tipi updates daily at 00:15 as root."""
-    # Check if the entry already exists to avoid duplicates
+
+def add_cronjob(entry: str, name: str):
+    """
+    Generic function to add a cron entry if it doesn't exist already.
+    :param entry: The exact line to add into /etc/crontab
+    :param name: A display name for logging feedback (e.g., "Tipi", "App", "System").
+    """
     with open(CRONTAB_FILE, 'r') as f:
         for line in f:
-            if TIPI_CRON_ENTRY.strip() in line.strip():
-                click.echo("Cron job already exists.")
+            if entry.strip() == line.strip():
+                click.echo(f"{name} cron job already exists.")
                 return
 
-    # Append the new entry to /etc/crontab
     with open(CRONTAB_FILE, 'a') as f:
-        f.write(TIPI_CRON_ENTRY)
-    click.echo("Cron job added successfully.")
+        f.write(entry)
+    click.echo(f"{name} cron job added successfully.")
+
+
+def remove_cronjob(entry: str, name: str):
+    """
+    Generic function to remove a cron entry if it exists.
+    :param entry: The exact line to remove from /etc/crontab
+    :param name: A display name for logging feedback (e.g., "Tipi", "App", "System").
+    """
+    with open(CRONTAB_FILE, 'r') as f:
+        lines = f.readlines()
+
+    new_lines = [line for line in lines if line.strip() != entry.strip()]
+    with open(CRONTAB_FILE, 'w') as f:
+        f.writelines(new_lines)
+
+    click.echo(f"{name} cron job removed successfully.")
+
+
+def add_tipi_update_cronjob():
+    add_cronjob(TIPI_CRON_ENTRY, "Tipi update")
+
 
 def remove_tipi_update_cronjob():
-    """Remove the cron job that runs Tipi updates daily at 00:15 as root."""
-    # Read the current crontab contents
-    with open(CRONTAB_FILE, 'r') as f:
-        lines = f.readlines()
+    remove_cronjob(TIPI_CRON_ENTRY, "Tipi update")
 
-    # Filter out the line to remove
-    new_lines = [line for line in lines if line.strip() != TIPI_CRON_ENTRY.strip()]
-
-    # Write the new crontab contents back to the file
-    with open(CRONTAB_FILE, 'w') as f:
-        f.writelines(new_lines)
-
-    click.echo("Cron job removed successfully.")
 
 def add_system_update_cronjob():
-    """Add a cron job to run system updates daily."""
-    # Check if the entry already exists to avoid duplicates
-    with open(CRONTAB_FILE, 'r') as f:
-        for line in f:
-            if SYSTEM_CRON_ENTRY.strip() in line.strip():
-                click.echo("System update cron job already exists.")
-                return
+    add_cronjob(SYSTEM_CRON_ENTRY, "System update")
 
-    # Append the new entry to /etc/crontab
-    with open(CRONTAB_FILE, 'a') as f:
-        f.write(SYSTEM_CRON_ENTRY)
-    click.echo("System update cron job added successfully.")
-
-def add_app_update_cronjob():
-    """Add a cron job to run app updates daily."""
-    # Check if the entry already exists to avoid duplicates
-    with open(CRONTAB_FILE, 'r') as f:
-        for line in f:
-            if APP_CRON_ENTRY.strip() in line.strip():
-                click.echo("App update cron job already exists.")
-                return
-
-    # Append the new entry to /etc/crontab
-    with open(CRONTAB_FILE, 'a') as f:
-        f.write(APP_CRON_ENTRY)
-    click.echo("APP update cron job added successfully.")
 
 def remove_system_update_cronjob():
-    """Remove the cron job that runs system updates daily."""
-    # Read the current crontab contents
-    with open(CRONTAB_FILE, 'r') as f:
-        lines = f.readlines()
+    remove_cronjob(SYSTEM_CRON_ENTRY, "System update")
 
-    # Filter out the line to remove
-    new_lines = [line for line in lines if line.strip() != SYSTEM_CRON_ENTRY.strip()]
 
-    # Write the new crontab contents back to the file
-    with open(CRONTAB_FILE, 'w') as f:
-        f.writelines(new_lines)
+def add_app_update_cronjob():
+    add_cronjob(APP_CRON_ENTRY, "App update")
 
-    click.echo("System update cron job removed successfully.")
 
 def remove_app_update_cronjob():
-    """Remove the cron job that runs system updates daily."""
-    # Read the current crontab contents
-    with open(CRONTAB_FILE, 'r') as f:
-        lines = f.readlines()
+    remove_cronjob(APP_CRON_ENTRY, "App update")
 
-    # Filter out the line to remove
-    new_lines = [line for line in lines if line.strip() != APP_CRON_ENTRY.strip()]
-
-    # Write the new crontab contents back to the file
-    with open(CRONTAB_FILE, 'w') as f:
-        f.writelines(new_lines)
-
-    click.echo("App update cron job removed successfully.")
 
 def add_backup_cronjob():
-    """Add a cron job to run Tipi backup daily."""
-    # Check if the entry already exists to avoid duplicates
-    with open(CRONTAB_FILE, 'r') as f:
-        for line in f:
-            if BACKUP_CRON_ENTRY.strip() in line.strip():
-                click.echo("Backup cron job already exists.")
-                return
+    add_cronjob(BACKUP_CRON_ENTRY, "Backup")
 
-    # Append the new entry to /etc/crontab
-    with open(CRONTAB_FILE, 'a') as f:
-        f.write(BACKUP_CRON_ENTRY)
-    click.echo("Backup cron job added successfully.")
 
 def remove_backup_cronjob():
-    """Remove the cron job that runs Tipi backup daily."""
-    # Read the current crontab contents
-    with open(CRONTAB_FILE, 'r') as f:
-        lines = f.readlines()
+    remove_cronjob(BACKUP_CRON_ENTRY, "Backup")
 
-    # Filter out the line to remove
-    new_lines = [line for line in lines if line.strip() != BACKUP_CRON_ENTRY.strip()]
-
-    # Write the new crontab contents back to the file
-    with open(CRONTAB_FILE, 'w') as f:
-        f.writelines(new_lines)
-
-    click.echo("Backup cron job removed successfully.")
 
 def clear_docker_cache():
     """Clear Docker cache by running 'docker system prune -a'."""
     click.echo("Clearing Docker cache...")
-    # Run docker system prune -a with automatic confirmation
     subprocess.run(["docker", "system", "prune", "-a", "-f"], check=True)
     click.echo("Docker cache cleared successfully.")
+
 
 def create_service_file(service_file, exec_start):
     """Create system service file."""
     service_content = f"""
-    [Unit]
-    Description=Monitor Shares Service
+[Unit]
+Description=Monitor Service
 
-    [Service]
-    ExecStart=/usr/bin/python3 {exec_start}
-    Restart=always
-    User=root
+[Service]
+ExecStart=/usr/bin/python3 {exec_start}
+Restart=always
+User=root
 
-    [Install]
-    WantedBy=multi-user.target
-    """
+[Install]
+WantedBy=multi-user.target
+"""
     with open(service_file, 'w') as f:
-        f.write(service_content)
-    click.echo("Service file created successfully.")
+        f.write(service_content.strip() + "\n")
+    click.echo(f"Service file created: {service_file}")
+
 
 def remove_service_file(service_file):
     """Remove system service file."""
     if os.path.exists(service_file):
         os.remove(service_file)
-        click.echo("Service file removed successfully.")
+        click.echo(f"Service file removed: {service_file}")
     else:
         click.echo("Service file does not exist.")
+
 
 def enable_service(service_name):
     """Enable and start the service."""
     subprocess.run(["systemctl", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "enable", service_name], check=True)
     subprocess.run(["systemctl", "start", service_name], check=True)
-    click.echo("Service enabled and started successfully.")
+    click.echo(f"Service '{service_name}' enabled and started successfully.")
+
 
 def disable_service(service_name):
     """Disable and stop the service."""
     subprocess.run(["systemctl", "stop", service_name], check=True)
     subprocess.run(["systemctl", "disable", service_name], check=True)
     subprocess.run(["systemctl", "daemon-reload"], check=True)
-    click.echo("Service disabled and stopped successfully.")
+    click.echo(f"Service '{service_name}' disabled and stopped successfully.")
+
 
 def update_apps():
     """Update all applications in the ./apps directory."""
@@ -234,6 +207,7 @@ def update_apps():
     else:
         click.echo("No ./apps directory found.")
 
+
 def install_temp_sensor():
     """Install temp-sensor monitoring."""
     click.echo("Installing temp-sensor monitoring...")
@@ -241,106 +215,124 @@ def install_temp_sensor():
     subprocess.run([os.path.join(CONFIG_DIR, 'bin/monitor_sensor.py'), '--config'], check=True)
     click.echo("Temp-sensor monitoring installed and started successfully.")
 
+
 def uninstall_temp_sensor():
     """Uninstall temp-sensor monitoring."""
     click.echo("Uninstalling temp-sensor monitoring...")
     subprocess.run([os.path.join(CONFIG_DIR, 'bin/monitor_sensor.py'), '--uninstall'], check=True)
     click.echo("Temp-sensor monitoring uninstalled successfully.")
 
+
+# Make sure we find runtipi-cli before defining the CLI commands
 try:
     runtipi_cli_path = find_runtipi_cli()
 except FileNotFoundError as e:
     click.echo(e)
     exit(1)
 
+
 @click.group()
-@click.option('--update-apps', is_flag=True, hidden=True, callback=lambda ctx, param, value: update_apps() if value else None, expose_value=False, is_eager=True)
+@click.option(
+    '--update-apps',
+    is_flag=True,
+    hidden=True,
+    callback=lambda ctx, param, value: update_apps() if value else None,
+    expose_value=False,
+    is_eager=True
+)
 def tipi_tricks():
     """Tipi tricks command group."""
     pass
+
 
 @tipi_tricks.group()
 def updates():
     """Updates submenu."""
     pass
 
+
 @updates.group()
 def tipi():
     """Tipi update options."""
     pass
 
+
 @tipi.command()
 def enable():
     """Enable Tipi updates."""
     click.echo("Enabling Tipi Auto Updates.")
-    # Add cron job for Tipi updates
     add_tipi_update_cronjob()
+
 
 @tipi.command()
 def disable():
     """Disable Tipi updates."""
     click.echo("Disabling Tipi Auto Updates.")
-    # Remove cron job for Tipi updates
     remove_tipi_update_cronjob()
+
 
 @updates.group()
 def app():
     """Application update options."""
     pass
 
+
 @app.command()
 def enable():
     """Enable Application updates."""
     click.echo("Enabling App Auto Updates.")
-    # Add cron job for App updates
     add_app_update_cronjob()
+
 
 @app.command()
 def disable():
     """Disable Application updates."""
     click.echo("Disabling App Auto Updates.")
-    # Remove cron job for App updates
     remove_app_update_cronjob()
+
 
 @updates.group()
 def system():
     """System update options."""
     pass
 
+
 @system.command()
 def enable():
     """Enable System updates."""
     click.echo("Enabling System Auto Updates.")
-    # Add cron job for system updates
     add_system_update_cronjob()
+
 
 @system.command()
 def disable():
     """Disable System updates."""
     click.echo("Disabling System Auto Updates.")
-    # Remove cron job for system updates
     remove_system_update_cronjob()
+
 
 @tipi_tricks.command()
 def clear_cache():
     """Clear Docker cache."""
     clear_docker_cache()
 
+
 @tipi_tricks.group()
 def monitors():
     """Monitors submenu."""
     pass
 
+
 @monitors.group()
 def mount_points():
-    """Mount points monitor:
-    This will monitor all mount points from /etc/fstab. 
-    If a mount fails, stop the containers listed in 
-    ./etc/monitor_shares.conf. Will start containers
-    if the mount points come back up. Will try to bring 
-    up the mountpoints with mount -a once a minute.
-    Optional: gotify-cli installed in the system path, to get notifications."""
+    """
+    Mount points monitor:
+    Monitors all mount points from /etc/fstab.
+    If a mount fails, stop containers listed in ./etc/monitor_shares.conf.
+    ...
+    """
     pass
+
 
 @mount_points.command()
 def enable():
@@ -349,6 +341,7 @@ def enable():
     create_service_file(SERVICE_FILE, os.path.join(CONFIG_DIR, 'bin/monitor_shares.py'))
     enable_service("monitor_shares.service")
 
+
 @mount_points.command()
 def disable():
     """Disable mount points monitoring."""
@@ -356,15 +349,16 @@ def disable():
     disable_service("monitor_shares.service")
     remove_service_file(SERVICE_FILE)
 
+
 @monitors.group()
 def drive_space():
-    """Drive space monitor:
-    This will monitor the disk space usage and trigger notifications or actions
-    if the space goes below a specified threshold. Threshold can be configured in runtipi/etc/monitor_space.conf. 
-    If drive space reaches 99%, Tipi will stop to prevent possible damage to the system. Tipi will automatically 
-    start again once space is freed. 
+    """
+    Drive space monitor:
+    Monitors disk space usage, triggers notifications if the space
+    goes below a specified threshold...
     """
     pass
+
 
 @drive_space.command()
 def enable():
@@ -373,6 +367,7 @@ def enable():
     create_service_file(DRIVE_SPACE_SERVICE_FILE, os.path.join(CONFIG_DIR, 'bin/monitor_space.py'))
     enable_service("monitor_drive_space.service")
 
+
 @drive_space.command()
 def disable():
     """Disable drive space monitoring."""
@@ -380,13 +375,16 @@ def disable():
     disable_service("monitor_drive_space.service")
     remove_service_file(DRIVE_SPACE_SERVICE_FILE)
 
+
 @monitors.group()
 def temp_sensor():
-    """Temp sensor monitor:
-    This will monitor the temperature sensors and trigger notifications or actions
-    if the temperature goes above a specified threshold. Threshold can be configured in runtipi/etc/monitor_sensor.conf. 
+    """
+    Temp sensor monitor:
+    Monitors temperature sensors, triggers notifications if the
+    temperature goes above a specified threshold...
     """
     pass
+
 
 @temp_sensor.command()
 def install():
@@ -394,36 +392,42 @@ def install():
     click.echo("Installing temp sensor monitoring...")
     install_temp_sensor()
 
+
 @temp_sensor.command()
 def uninstall():
     """Uninstall temp sensor monitoring."""
     click.echo("Uninstalling temp sensor monitoring...")
     uninstall_temp_sensor()
 
+
 @tipi_tricks.group()
 def backup():
     """Backup submenu."""
     pass
 
+
 @backup.group()
 def tipi_backup():
-    """Tipi backup options: Enable for dialy Tipi backups. Max number of backups is configurable in runtipi/etc/scheduled_tipi_backup.conf
+    """
+    Tipi backup options: Enable daily Tipi backups.
+    Max number of backups is configurable in runtipi/etc/scheduled_tipi_backup.conf
     """
     pass
+
 
 @tipi_backup.command()
 def enable():
     """Enable Tipi backup."""
     click.echo("Enabling Tipi Backup.")
-    # Add cron job for Tipi backup
     add_backup_cronjob()
+
 
 @tipi_backup.command()
 def disable():
     """Disable Tipi backup."""
     click.echo("Disabling Tipi Backup.")
-    # Remove cron job for Tipi backup
     remove_backup_cronjob()
+
 
 if __name__ == '__main__':
     tipi_tricks()
